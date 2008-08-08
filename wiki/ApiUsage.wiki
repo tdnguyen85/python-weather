@@ -51,3 +51,5 @@ heat_index_f => None
 weather => 'Mostly Cloudy'
 ...
 }}}
+
+New versions of the module will include `zipcode,city,state,zipcode,etc.` from the LocalizationIntegration data
