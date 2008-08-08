@@ -1,0 +1,10 @@
+#summary How to retrieve weather reports via the web interface
+#labels Featured,Phase-Implementation
+
+== Web Applications ==
+
+Go to the source directory where `runcgi.py` and `runwsgi.py` are located. 
+
+If you have Python >= 2.5 then execute `runwsgi.py` and go to http://localhost:8000/?. Otherwise, execute `runcgi.py` and go to http://localhost:8000/cgi-bin/weather.py?
+
+The script operates on the QUERY_STRING variable so anything after the `?` should be a station identifier. 
