@@ -13,7 +13,7 @@ This will take a minute while it fetches the current observations from NOAA.
 
 _Hint: if you run this say every hour or so (say in a cronjob) it will keep the observation base current._
 
-Now find a station to parse. Station takes a NOAA station identifier. [http://www.weather.gov/xml/current_obs/ Find an observation station close to you]
+Now find a station to parse. Station takes a NOAA station identifier. To find stations by location (city,state,zip,etc) look to LocalizationIntegration
 
 Get a list of available stations by identifier
 
