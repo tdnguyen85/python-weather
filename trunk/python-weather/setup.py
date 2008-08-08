@@ -10,5 +10,5 @@ setup(
     url='http://code.google.com/p/python-weather/',
     packages=['Weather','Weather.data'],
     package_data={'Weather':['data/*.csv']},
-    scripts=['bin/runwsgi.py','bin/cronjob.py','bin/runcgi.py'],
+#    scripts=['bin/runwsgi.py','bin/cronjob.py','bin/runcgi.py'],
 )
