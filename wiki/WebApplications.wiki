@@ -3,8 +3,13 @@
 
 == Web Applications ==
 
-Go to the source directory where `runcgi.py` and `runwsgi.py` are located. 
+Go to the source directory you downloaded and run Weather/interface.py which starts a WSGI server that handles various applications. Applications include
 
-If you have Python >= 2.5 then execute `runwsgi.py` and go to http://localhost:8000/?. Otherwise, execute `runcgi.py` and go to http://localhost:8000/cgi-bin/weather.py?
+  * *detail* - station detail view
+  * *list* - list of all stations
+  * *zip* - lookup by zipcode
+  * *location* - lookup by location
+  * *update* - update observation base
 
-The script operates on the QUERY_STRING variable so anything after the `?` should be a station identifier. 
+
+Just point your browser to http://localhost:8000/`<app_name>` and have at it. The parameters are QUERY_STRING driven so stuff like http://localhost:8000/zip?21202 or http://localhost:8000/location?baltimore,md will work just fine
