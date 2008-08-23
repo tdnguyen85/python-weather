@@ -1,8 +1,6 @@
 #summary How to retrieve weather reports via the web interface
 #labels Featured,Phase-Implementation
 
-== Web Applications ==
-
 Go to the source directory you downloaded and run Weather/interface.py which starts a WSGI server that handles various applications. Applications include
 
   * *detail* - station detail view
