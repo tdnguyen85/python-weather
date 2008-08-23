@@ -12,4 +12,4 @@ Go to the source directory you downloaded and run Weather/interface.py which sta
   * *update* - update observation base
 
 
-Just point your browser to http://localhost:8000/`<app_name>` and have at it. The parameters are QUERY_STRING driven so stuff like http://localhost:8000/zip?21202 or http://localhost:8000/location?baltimore,md will work just fine
+Just point your browser to http://localhost:8000/ `<app_name>` and have at it. The parameters are QUERY_STRING driven so stuff like http://localhost:8000/zip?21202 or http://localhost:8000/location?baltimore,md will work just fine
