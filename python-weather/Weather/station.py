@@ -14,15 +14,15 @@ class Station(SGMLParser,UserDict):
     @param station: The NOAA station identifier to search, eg KMTN
     @param force: Boolean for whether an update should be forced
     """
-    def __init__(self, station, force=False):
+    def __init__(self, station):
         SGMLParser.__init__(self)
         UserDict.__init__(self)
-        self.force = force
         self.tag = None
         self.station = station.upper()
         self.update()
 
     def update(self):
+        self.data = {}
         # csv update
         keys = ('latitude','longitude','city','state','zipcode')
         for row in rows():
@@ -33,7 +33,7 @@ class Station(SGMLParser,UserDict):
             raise AttributeError,'Station %s not found'%self.station
         # sgmllib update
         self.reset()
-        if os.path.isfile(ZFILE) and not self.force:
+        if os.path.isfile(ZFILE):
             zfile = zipfile.ZipFile(ZFILE,'r')
             for name in zfile.namelist():
                 if name.endswith('%s.xml'%self.station):
@@ -41,8 +41,8 @@ class Station(SGMLParser,UserDict):
                     del zfile
                     break
         else:
-            wurl = 'http://www.weather.gov/data/current_obs/%s.xml'
-            SGMLParser.feed(self, urlopen(wurl%self.station).read())
+            Fetch().start()
+            SGMLParser.feed(self, urlopen(WURL%self.station).read())
         self.close()
 
 
@@ -65,7 +65,7 @@ class Station(SGMLParser,UserDict):
 
     def datetime(self):
         """
-        Parses and returns the observation datetime object
+        Parses and returns the observation datetime object (if possible)
         """
         if 'observation_time_rfc822' in self.data \
            and self.data['observation_time_rfc822']:
@@ -90,7 +90,7 @@ class Station(SGMLParser,UserDict):
 
     def location(self):
         """
-        Returns location string usually in <StationName>,<State> format
+        Returns location string usually in `StationName,State` format
         """
         try:
             return self.data['location']
@@ -104,44 +104,24 @@ class Station(SGMLParser,UserDict):
         for i in self.items():
             print '%s => %r'%i
 
-    def html(self):
-        """
-        Yields HTML source used in web apps
-        """
-        titler = lambda x: ' '.join(map(lambda y: y.title(), x.split('_')))
-        yield '<html><body><table><tr><td><h2>%s: %s</h2><p><b>%s</b></p></td>'%\
-            (self.station,self.location(),self.data.get('weather',''))
-        yield '<td><img src="%s"></td></tr>'%self.icon()
-        yield '<tr><td><p>Currently: %s</p>'%\
-            datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        yield '<p>Time of observation: %s</p></td></tr>'%self.datetime()
-        yield '</table><hr><table><tr><th><h3>Urls</h3></th><th><h3>Metrics</h3></th><th><h3>Info</h3></th></tr>'
-        urls,metrics,info = [],[],[]
-        for k,v in self.items():
-            if not v: continue
-            k = titler(k)
-            tr = '<tr><th align="right">%s</th><td>%s</td></tr>'
-            if type(v) == type(0.):
-                metrics.append(tr%(k,'%.3f'%v))
-            elif v.startswith('http'):
-                urls.append(tr%(k,'<a href="%s">%s</a>'%(v,filter(None,v.split('/'))[-1])))
-            else:
-                info.append(tr%(k,v))
-        r = ['<td valign="top"><table>%s</table></td>'%''.join(locals()[x]) for x in ('urls','metrics','info')]
-        yield '<tr>%s</tr></table>'%''.join(r)
-
     def __repr__(self):
-        return '<Station %s: %s>'%(self.station,self.location())
+        return '<Weather.Station %s>'%self
+
+    def __str__(self):
+        return '%s: %s'%(self.station,self.location())
 
 def stations():
     """
     Returns list of station identifiers with included slicing
     """
     if os.path.isfile(ZFILE):
-        for name in zipfile.ZipFile(ZFILE,'r').namelist():
-            if name.endswith('.xml') and not \
-                (name.endswith('index.xml') or name.endswith('null.xml')):
-                yield os.path.split(name)[-1].split('.')[0]
+        zfile = zipfile.ZipFile(ZFILE,'r')
+        for name in zfile.namelist():
+            if name.endswith('index.xml'):
+                for l in zfile.read(name).splitlines():
+                    if l.find('station_id')>-1:
+                        yield l.split('>')[1].split('<')[0]
+                break
     else:
         fetch()
         for s in stations(): yield s
@@ -184,7 +164,7 @@ def location2station(location):
                 return Station(row[0])
 
 if __name__ == '__main__':
-    print Station('KMTN')['zipcode']
-    print location2station('Baltimore,MD')['city']
-    print zip2station(21204)['zipcode']
-    print state2stations('MD').next().location()
+    print Station('KMTN')
+    print location2station('Baltimore, MD')
+    print zip2station(21204)
+    print len([x for x in stations()])
