@@ -1,3 +1,7 @@
+"""
+A very simple WSGI interface to the module
+"""
+
 from Weather import *
 from urllib import unquote
 from datetime import datetime

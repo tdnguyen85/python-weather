@@ -2,7 +2,7 @@ import os
 import zipfile
 from sgmllib import SGMLParser
 from UserDict import UserDict
-from urllib import urlopen
+from urllib import urlopen,quote
 from datetime import datetime
 from Weather.data import rows
 from Weather.globals import *
@@ -21,7 +21,7 @@ class Station(SGMLParser,UserDict):
         self.station = station.upper()
         self.update()
 
-    def update(self):
+    def update(self, live=False):
         self.data = {}
         # csv update
         keys = ('latitude','longitude','city','state','zipcode')
@@ -33,7 +33,7 @@ class Station(SGMLParser,UserDict):
             raise AttributeError,'Station %s not found'%self.station
         # sgmllib update
         self.reset()
-        if os.path.isfile(ZFILE):
+        if os.path.isfile(ZFILE) and not live:
             zfile = zipfile.ZipFile(ZFILE,'r')
             for name in zfile.namelist():
                 if name.endswith('%s.xml'%self.station):
@@ -41,7 +41,7 @@ class Station(SGMLParser,UserDict):
                     del zfile
                     break
         else:
-            Fetch().start()
+            #Fetch().start()
             SGMLParser.feed(self, urlopen(WURL%self.station).read())
         self.close()
 
@@ -112,59 +112,42 @@ class Station(SGMLParser,UserDict):
 
 def stations():
     """
-    Returns list of station identifiers with included slicing
+    Returns iterator of station tuples
     """
-    if os.path.isfile(ZFILE):
-        zfile = zipfile.ZipFile(ZFILE,'r')
-        for name in zfile.namelist():
-            if name.endswith('index.xml'):
-                for l in zfile.read(name).splitlines():
-                    if l.find('station_id')>-1:
-                        yield l.split('>')[1].split('<')[0]
-                break
-    else:
-        fetch()
-        for s in stations(): yield s
-
+    for row in rows():
+        yield tuple(row)
 
 def state2stations(state):
     """
     Translate a state identifier (ie DC) into a list of
-    Station instances from that state
+    Station tuples from that state
     """
-    state = state.upper()
+    state = state[:2].upper()
     for row in rows():
         if row[5]==state:
-            yield Station(row[0])
-
-def zip2station(zipcode):
-    """
-    Translate a zipcode into Station instance by closest match
-    """
-    # zipcode of len 5 and oh yea, the best is just that low
-    zipcode,best = int(str(zipcode)[:5]),0
-    for row in rows():
-        # dont ask about the replacements...
-        zip = int(row[6].replace('X','5').replace('H','5'))
-        if abs(zipcode-zip) < abs(zipcode-best):
-            best,result = zip,row[0]
-    return Station(result)
+            yield tuple(row)
 
 def location2station(location):
     """
-    Translate `City,State` pairs like 'Washington,DC'
-    into Station instance by closest match
+    Translate full location into Station tuple by closest match
+    Locations can be in any Google friendly form like
+    "State St, Troy, NY", "2nd st & State St, Troy, NY" and "7 State St, Troy, NY"
     """
-    # just shity and state, prease!
-    city,state = map(lambda x: x.strip().lower(),
-                     location.split(',')[:2])
+    # just forget it, use google
+    location = quote(str(location))
+    geo_url = 'http://maps.google.com/maps/geo?key=%s&q=%s&sensor=false&output=csv'%(API_KEY,location)
+    point = map(float,urlopen(geo_url).readline().split(',')[-2:])
+    best,result = 99999999,[]
     for row in rows():
-        if row[5].lower() == state:
-            if row[4].lower() == city:
-                return Station(row[0])
+        test_point = map(float, (row[2],row[3]))
+        distance = ((test_point[0]-point[0])**2 + (test_point[1]-point[1])**2)**.5
+        if distance < best:
+            best,result = distance,row
+    return tuple(result)
 
 if __name__ == '__main__':
     print Station('KMTN')
     print location2station('Baltimore, MD')
-    print zip2station(21204)
+    print location2station(21204)
+    print location2station('Dulaney Valley rd, towson MD')
     print len([x for x in stations()])
