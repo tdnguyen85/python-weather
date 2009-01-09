@@ -4,7 +4,7 @@ import os
 from math import *
 from Weather.globals import *
 
-rows = lambda: csv.reader(open(pjoin(BASE,'data','station-locations.csv')).readlines())
+rows = lambda: csv.reader(open(path.join(BASE,'data','station-locations.csv')).readlines())
 
 def calcDist(lat_A, long_A, lat_B, long_B):
     """from http://zips.sourceforge.net/#dist_calc"""
@@ -25,7 +25,7 @@ class Miner:
     """
     def __init__(self):
         if os.path.isfile(ZFILE):
-            fname = pjoin(BASE,'data','station-locations.csv')
+            fname = path.join(BASE,'data','station-locations.csv')
             self.writer = csv.writer(open(fname,'w'))
             file = zipfile.ZipFile(ZFILE,'r')
             for name in file.namelist():
@@ -60,7 +60,7 @@ class Miner:
         sid,ss,lat,lon,d = args[:5]
 
         # zips.csv from http://sourceforge.net/projects/zips/
-        for row2 in csv.reader(open(pjoin(BASE,'data','zips.csv')).readlines()[1:]):
+        for row2 in csv.reader(open(path.join(BASE,'data','zips.csv')).readlines()[1:]):
             z,s,la,lo,c,sl = map(lambda x: x.replace('"','').strip(), row2)
             la,lo = float(la),float(lo)
             # distance from station to zip lat&long
@@ -71,7 +71,7 @@ class Miner:
         self.writer.writerow(t)
 
 if __name__ == '__main__':
-    if not os.path.isfile(pjoin(BASE,'data','station-locations.csv')):
+    if not path.isfile(path.join(BASE,'data','station-locations.csv')):
         Miner()
     from Weather.stats import DistStats
     print DistStats()
