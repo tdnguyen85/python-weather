@@ -22,11 +22,6 @@ Now fetch a Station instance by a city and state pair
 <Station KDMH: Baltimore, Inner Harbor, MD>
 }}}
 
-And by zipcode directly
-{{{
->>> station.zip2station(21204)
-<Station KMTN: Baltimore / Martin, MD>
-}}}
 
 You can also fetch a listing of Stations in any given state
 
